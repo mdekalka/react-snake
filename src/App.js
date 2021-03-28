@@ -172,6 +172,14 @@ function App() {
     setEnabledSound(sound => !sound);
   }
 
+  function getScoreCountUntilNextEffect() {
+    const rest = score % EFFECT_UPDATE_COUNT;
+    console.log(rest, "REST")
+    console.log(EFFECT_UPDATE_COUNT - rest, "ASFGASF ")
+
+    return EFFECT_UPDATE_COUNT - rest;
+  }
+
 
   return (
     <div className="game-wrapper">
@@ -199,6 +207,8 @@ function App() {
           <hr/>
           <p className="information-text">Hightest score: {highestStats.highestScore}</p>
           <p className="information-text">Hightest speed: {highestStats.highestSpeed}</p>
+          <hr/>
+          <p>You need to get <span className="information-note">{getScoreCountUntilNextEffect()}</span> points to generate next effect.</p>
         </div>
         <div className="information-board controls-board">
           <h4 className="information-header">Controls:</h4>
@@ -207,7 +217,6 @@ function App() {
           <p className="information-text"><span className="information-note">↓</span> - to move down</p>
           <p className="information-text"><span className="information-note">←</span> - to move left</p>
           <hr/>
-          <p>Random effect will be generated every <span className="information-note">{EFFECT_UPDATE_COUNT}</span> scores you get.</p>
         </div>
         <div className="information-board effects-board">
           <h4 className="information-header">Board effects:</h4>
