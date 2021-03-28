@@ -70,7 +70,9 @@ function App() {
 
     updateHighestState();
 
-    setIsGameOver(false)
+    setInsivibleWalls(GAME_CONFIG.invisibleWalls);
+    setReverseControl(GAME_CONFIG.reverseControl);
+    setIsGameOver(false);
     setSnake(initialSnake);
     setFoodCells([foodCell]);
     setWallCells([]);
@@ -174,8 +176,6 @@ function App() {
 
   function getScoreCountUntilNextEffect() {
     const rest = score % EFFECT_UPDATE_COUNT;
-    console.log(rest, "REST")
-    console.log(EFFECT_UPDATE_COUNT - rest, "ASFGASF ")
 
     return EFFECT_UPDATE_COUNT - rest;
   }
