@@ -84,9 +84,7 @@ export const useBoardEffects = ({ score, snake, setSnakeSpeed, foodCells, setFoo
         setCurrentEffect(effect);
         applyEffect(effect);
       }
-    }  else {
-      setCurrentEffect(null);
-    };
+    }
   }, [score]);
 
   function shouldGenerateEffect() {

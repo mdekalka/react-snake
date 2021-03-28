@@ -8,10 +8,12 @@ export const EffectNotification = ({ effect, delay }) => {
 
   useEffect(() => {
     let timeoutId = null;
+    setVisible(true)
 
     if (effect) {
       timeoutId = setTimeout(() => {
-        setVisible(false)
+        setVisible(false);
+        clearInterval();
       }, delay);
     }
 
