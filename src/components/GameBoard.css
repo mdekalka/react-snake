@@ -1,0 +1,147 @@
+.board {
+  position: relative;
+  margin: 0 0 15px;
+  background-color: var(--board-bg);
+  box-shadow: -1px 0px 13px 0px rgb(91 84 100 / 75%)
+}
+.board.no-borders::before,
+.board.no-borders::after {
+  position: absolute;
+  font-size: 24px;
+  color: #bfabab;
+}
+
+.board.no-borders::before {
+  content: "\21E0";
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: horizontalSlide 1.7s ease-in-out infinite;
+}
+
+.board.no-borders::after {
+  content: "\21E3";
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: verticalSlide 1.7s ease-in-out infinite;
+}
+
+.row {
+  height: var(--cell-size);
+}
+
+.cell {
+  position: relative;
+  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  /* debug only */
+  /* border: 1px solid yellow; */
+}
+
+.cell-content {
+  position: relative;
+  height: 100%;
+}
+
+.food-cell {
+  animation: spin 15s linear infinite;
+}
+
+.food-cell .cell-content::before {
+  content: '\2735';
+  position: relative;
+  display: inline-block;
+  transform: scale(2);
+  color: #da5eff;
+}
+
+.wall-cell .cell-content::before {
+  content: '\2620';
+  position: relative;
+  display: inline-block;
+  transform: scale(2);
+  color: #dc5aa2;
+}
+
+.snake-cell {
+  background-color: #8a7e90;
+  background: var(--snake-color);
+}
+
+.snake-cell.head .cell-content {
+  height: 100%;
+  width: 100%;
+  background-image: url('../images/arrow.svg');
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: #ecdef0;
+}
+
+.snake-cell.head.up .cell-content {
+  transform: rotate(-90deg);
+}
+
+.snake-cell.head.down .cell-content {
+  transform: rotate(90deg);
+}
+
+.snake-cell.head.left .cell-content {
+  transform: rotate(180deg);
+}
+
+.snake-cell::before {
+  content: "";
+  height: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  border-bottom: var(--snake-border) solid var(--snake-color);
+  border-left: var(--snake-border) solid var(--board-bg);
+  border-right: var(--snake-border) solid var(--board-bg);
+}
+
+.snake-cell::after {
+  content: "";
+  height: 0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-top: var(--snake-border) solid var(--snake-color);
+  border-left: var(--snake-border) solid var(--board-bg);
+  border-right: var(--snake-border) solid var(--board-bg);
+}
+
+@keyframes spin {
+  100% {
+    transform:rotate(360deg);
+  }
+}
+
+@keyframes horizontalSlide {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(-4px, 0);
+  }
+}
+
+@keyframes verticalSlide {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(0, 4px);
+  }
+}
