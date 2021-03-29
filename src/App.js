@@ -110,6 +110,8 @@ function App() {
       }
 
       if (isValidDirection) {
+        // Since keydown logic happens outside on tick itnerval, we can't update direction state here.
+        // Instead we're saving only ref with future direction and save it inside interval tick update
         fututeDirection.current = direction;
       }
     }
@@ -120,17 +122,7 @@ function App() {
   }, [isGameOver, reverseControl])
 
   useInterval(() => {
-    // let fututeDirection = fututeDirection.current;
-
     if (!fututeDirection.current) return;
-
-    // setDirection(lastDirection => {
-    //   const newDirection = isOppositeDirection(lastDirection, direction) ? lastDirection : direction;
-
-    //   fututeDirection.current = newDirection;
-
-    //   return newDirection
-    // });
 
     const newDirection = isOppositeDirection(direction, fututeDirection.current) ? direction : fututeDirection.current;
     let nextHeadPosition = getCoordinatesByDirection(snake.head, newDirection); 
