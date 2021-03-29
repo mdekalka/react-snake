@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameBoard } from './components/GameBoard';
 import { GameOver } from './components/GameOver';
 import { EffectNotification } from './components/EffectNotification'
 
-import { useInterval, useAudio, useBoardEffects, useLocalStorage, BOARD_EFFECTS, EFFECT_UPDATE_COUNT } from './hooks';
+import { useInterval, useAudio, useBoardEffects, useLocalStorage, BOARD_EFFECTS, EFFECT_UPDATE_COUNT, usePrevious } from './hooks';
 import { GAME_CONFIG } from './configs';
 import { createBoard, isOutOfBoundaries, getInitialSnakePosition, getCellPosition, isBodyCollision } from './utils/boardUtils';
 import { getKeyDirection, isOppositeDirection, getCoordinatesByDirection, getCoordinatesByValue, getBoundaryCoordinatesByDirection, OPPOSITE_DIRECTION } from './utils/coordinateUtils';
@@ -27,6 +27,12 @@ function App() {
   const [ foodCells, setFoodCells ] = useState([foodCell]);
   const [ wallCells, setWallCells ] = useState([]);
   const [ direction, setDirection ] = useState(null);
+  /*
+    Store previous direction in ref, to check reverse collisions
+    Since keydown events are not throttled and not inside setInterval it might be a case, when you click too fast and get wrong direction from
+    actual state and trigger the collision guard.
+  */
+  const fututeDirection = useRef(direction)
   const [ highestStats, saveHighestStats ] = useLocalStorage(STORAGE_STATS_KEY, { highestScore: 0, highestSpeed: GAME_CONFIG.snakeSpeed });
   const [ score, setScore ] = useState(0);
   const [ isGameOver, setIsGameOver ] = useState(false);
@@ -77,6 +83,7 @@ function App() {
     setFoodCells([foodCell]);
     setWallCells([]);
     setDirection(null);
+    fututeDirection.current = null;
     setScore(0);
     setSnakeSpeed(GAME_CONFIG.snakeSpeed);
   }, [updateHighestState]);
@@ -102,9 +109,9 @@ function App() {
         direction = OPPOSITE_DIRECTION[direction];
       }
 
-      isValidDirection && setDirection(lastDirection => {
-        return isOppositeDirection(lastDirection, direction) ? lastDirection : direction;
-      });
+      if (isValidDirection) {
+        fututeDirection.current = direction;
+      }
     }
 
     return function() {
@@ -113,14 +120,25 @@ function App() {
   }, [isGameOver, reverseControl])
 
   useInterval(() => {
-    if (!direction) return;
+    // let fututeDirection = fututeDirection.current;
 
-    let nextHeadPosition = getCoordinatesByDirection(snake.head, direction); 
-  
+    if (!fututeDirection.current) return;
+
+    // setDirection(lastDirection => {
+    //   const newDirection = isOppositeDirection(lastDirection, direction) ? lastDirection : direction;
+
+    //   fututeDirection.current = newDirection;
+
+    //   return newDirection
+    // });
+
+    const newDirection = isOppositeDirection(direction, fututeDirection.current) ? direction : fututeDirection.current;
+    let nextHeadPosition = getCoordinatesByDirection(snake.head, newDirection); 
+
     // Out of board size - end the game
     if (isOutOfBoundaries(nextHeadPosition, board)) {
       if (invisibleWalls) {
-        nextHeadPosition = getBoundaryCoordinatesByDirection(nextHeadPosition, board, direction)
+        nextHeadPosition = getBoundaryCoordinatesByDirection(nextHeadPosition, board, newDirection)
       } else {
         return setIsGameOver(true);
       }
@@ -132,7 +150,12 @@ function App() {
 
     // First guard: when you hit head into snake body
     // Second guard: when you hit head into wall cells
-    if (isBodyCollision(snake.cells, newHead.cell) || isBodyCollision(wallCells, newHead.cell)) {
+    if (isBodyCollision(snake.cells, newHead.cell)) {
+      return setIsGameOver(true);
+    }
+
+    // Checking collision snake head with the wall cells
+    if (isBodyCollision(wallCells, newHead.cell)) {
       return setIsGameOver(true);
     }
 
@@ -152,8 +175,9 @@ function App() {
 
     const newTail = getCoordinatesByValue(board, updatedSnakeCells[0]);
 
-    setSnake({ head: newHead, tail: newTail, cells: updatedSnakeCells })
-  }, snakeSpeed);
+    setDirection(newDirection);
+    setSnake({ head: newHead, tail: newTail, cells: updatedSnakeCells });
+  }, !isGameOver ? snakeSpeed : null); // stop interval on game over
 
   function generateFoodCells(snakeCells) {
     const foodPosition = getRandomNumberExcluded(GAME_CONFIG.boardStartCellId, GAME_CONFIG.boardEndCellId, snakeCells);
