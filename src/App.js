@@ -3,7 +3,7 @@ import { GameBoard } from './components/GameBoard';
 import { GameOver } from './components/GameOver';
 import { EffectNotification } from './components/EffectNotification'
 
-import { useInterval, useAudio, useBoardEffects, useLocalStorage, BOARD_EFFECTS, EFFECT_UPDATE_COUNT, usePrevious } from './hooks';
+import { useInterval, useAudio, useBoardEffects, getScoreUntilNextEffect, useLocalStorage, BOARD_EFFECTS } from './hooks';
 import { GAME_CONFIG } from './configs';
 import { createBoard, isOutOfBoundaries, getInitialSnakePosition, getCellPosition, isBodyCollision } from './utils/boardUtils';
 import { getKeyDirection, isOppositeDirection, getCoordinatesByDirection, getCoordinatesByValue, getBoundaryCoordinatesByDirection, OPPOSITE_DIRECTION } from './utils/coordinateUtils';
@@ -12,9 +12,7 @@ import { getRandomNumberExcluded } from './utils/booleanUtils'
 import './App.css';
 
 
-function getSnake(position) {
-  return { head: position, tail: position, cells: [position.cell] };
-}
+function getSnake(position) { return { head: position, tail: position, cells: [position.cell] }};
 const board = createBoard(GAME_CONFIG.boardRowSize, GAME_CONFIG.boardColSize);
 const initialSnake = getSnake(getInitialSnakePosition(board, GAME_CONFIG));
 const STORAGE_STATS_KEY = 'highest-stats';
@@ -27,11 +25,6 @@ function App() {
   const [ foodCells, setFoodCells ] = useState([foodCell]);
   const [ wallCells, setWallCells ] = useState([]);
   const [ direction, setDirection ] = useState(null);
-  /*
-    Store previous direction in ref, to check reverse collisions
-    Since keydown events are not throttled and not inside setInterval it might be a case, when you click too fast and get wrong direction from
-    actual state and trigger the collision guard.
-  */
   const fututeDirection = useRef(direction)
   const [ highestStats, saveHighestStats ] = useLocalStorage(STORAGE_STATS_KEY, { highestScore: 0, highestSpeed: GAME_CONFIG.snakeSpeed });
   const [ score, setScore ] = useState(0);
@@ -140,13 +133,12 @@ function App() {
     const newHead = {...nextHeadPosition, cell: nextHeadCellPosition};
     let updatedSnakeCells = [];
 
-    // First guard: when you hit head into snake body
-    // Second guard: when you hit head into wall cells
+    // Checking snake body collision with new snake head 
     if (isBodyCollision(snake.cells, newHead.cell)) {
       return setIsGameOver(true);
     }
 
-    // Checking collision snake head with the wall cells
+    // Checking wall cells collision with new snake head
     if (isBodyCollision(wallCells, newHead.cell)) {
       return setIsGameOver(true);
     }
@@ -190,11 +182,7 @@ function App() {
     setEnabledSound(sound => !sound);
   }
 
-  function getScoreCountUntilNextEffect() {
-    const rest = score % EFFECT_UPDATE_COUNT;
 
-    return EFFECT_UPDATE_COUNT - rest;
-  }
 
 
   return (
@@ -224,7 +212,7 @@ function App() {
           <p className="information-text">Hightest score: {highestStats.highestScore}</p>
           <p className="information-text">Hightest speed: {highestStats.highestSpeed}</p>
           <hr/>
-          <p>You need to get <span className="information-note">{getScoreCountUntilNextEffect()}</span> points to generate next effect.</p>
+          <p>You need to get <span className="information-note">{getScoreUntilNextEffect(score)}</span> points to generate next effect.</p>
         </div>
         <div className="information-board controls-board">
           <h4 className="information-header">Controls:</h4>
