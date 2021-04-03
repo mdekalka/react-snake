@@ -1,92 +1,22 @@
 import { useEffect, useState } from 'react';
+
 import { GAME_CONFIG } from '../configs';
-import { getRandomNumbersExcluded } from '../utils/booleanUtils';
+import { BOARD_EFFECTS, GENERATE_EFFECT_SCORE_STEP, EFFECT_CELLS_COUNT, INCREASE_SPEED_VALUE } from '../constants/boardEffectsConstants';
+import { getRandomNumbersExcluded, getSampleFromArray } from '../utils/booleanUtils';
 import { difference, arrayToHash } from '../utils/arrayUtils';
 
-export const BOARD_EFFECTS = [
-  {
-    id: '#1',
-    name: 'speedRecovery',
-    description: 'Recovers speed to original start value.',
-    icon: '✈',
-    quality: 'positive'
-  },
-   {
-     id: '#2',
-     name: 'foodRain',
-     description: 'Generates multiple food cells across the board.',
-     icon: '✵',
-     quality: 'positive',
-   },
-   {
-     id: '#3',
-     name: 'noBorders',
-     description: 'Allow snake to go through borders w/o damage.',
-     icon: '↹',
-     quality: 'positive',
-     interactWith: '$8'
-   },
-   {
-    id: '#4',
-    name: 'normalControl',
-    description: 'Arrow controls become normal.',
-    icon: '↔',
-    quality: 'positive',
-    allowedAfter: '#7'
-  },
-
-   {
-    id: '#5',
-    name: 'wallRain',
-    description: 'Generates multiple walls across the board.',
-    icon: '☲',
-    quality: 'negative',
-  },
-  {
-    id: '#6',
-    name: 'speedBoost',
-    description: 'Significantly increase speed.',
-    icon: '➢',
-    quality: 'negative',
-  },
-  {
-    id: '#7',
-    name: 'reverseControl',
-    description: 'Arrow controls become reversed.',
-    icon: '⤮',
-    quality: 'negative',
-    interactWith: '#4'
-  },
-  {
-    id: '#8',
-    name: 'borders',
-    description: 'Moving through borders not allowed.',
-    icon: '↛',
-    quality: 'negative',
-    allowedAfter: '#3'
-  },
-]
-
-// Generate effect on every step value
-export const EFFECT_UPDATE_STEP = 5;
-// Limit count of new generated cells
-const ADDITIONAL_CELLS_LIMIT = 5;
-// Increase speed value
-const SPEED_BOOST_VALUE = 20;
 
 const effectsHash = arrayToHash(BOARD_EFFECTS, 'id');
 const effectIds = Object.keys(effectsHash);
 
 function getSkipEffectIds() {
-  return BOARD_EFFECTS
-    .filter(effect => effect.allowedAfter)
-    .map(effect => effect.id);
+  return BOARD_EFFECTS.filter(({ allowedAfter }) => allowedAfter).map(({ id }) => id);
 }
 
 export function getScoreUntilNextEffect(score) {
-  const rest = score % EFFECT_UPDATE_STEP;
+  const rest = score % GENERATE_EFFECT_SCORE_STEP;
   
-  return EFFECT_UPDATE_STEP - rest;
+  return GENERATE_EFFECT_SCORE_STEP - rest;
 }
 
 export const useBoardEffects = ({ score, snake, setSnakeSpeed, foodCells, setFoodCells, wallCells, setWallCells, setInsivibleWalls, setReverseControl }) => {
@@ -94,14 +24,16 @@ export const useBoardEffects = ({ score, snake, setSnakeSpeed, foodCells, setFoo
   const [ skipEffectIds, setSkipEffectsIds ] = useState(getSkipEffectIds);
 
   useEffect(() => {
-    const shouldGenerate = shouldGenerateEffect();
-    console.log(score, 'SCORE')
-    console.log(shouldGenerate, 'shouldGenerate')
+    // It's probably new game or restart - just re-init the initial state
+    if (score === 0) {
+      setCurrentEffect(null);
+      setSkipEffectsIds(getSkipEffectIds);
 
-    if (shouldGenerate) {
+      return;
+    }
+
+    if (shouldGenerateEffect()) {
       const effect = generateNextEffect();
-
-      console.log(effect, 'EFFETCT')
 
       if (effect) {
         setCurrentEffect({ ...effect });
@@ -111,18 +43,13 @@ export const useBoardEffects = ({ score, snake, setSnakeSpeed, foodCells, setFoo
   }, [score]);
 
   function shouldGenerateEffect() {
-    if (!score) return false;
-
-    return getScoreUntilNextEffect(score) === EFFECT_UPDATE_STEP;
+    return getScoreUntilNextEffect(score) === GENERATE_EFFECT_SCORE_STEP;
   }
 
   function generateNextEffect() {
-    // TODO: Too over bloated, this should be much easier logic.
     const allowedEffectIds = difference(effectIds, skipEffectIds);
-    const effectId = allowedEffectIds[Math.floor(Math.random() * allowedEffectIds.length)];
+    const effectId = getSampleFromArray(allowedEffectIds);
     const effect = effectsHash[effectId];
-
-    console.log(effect, 'ASFASF')
 
     if (effect.interactWith) {
       if (skipEffectIds.includes(effect.interactWith)) {
@@ -135,7 +62,6 @@ export const useBoardEffects = ({ score, snake, setSnakeSpeed, foodCells, setFoo
     return effect;
   }
 
-
   function applyEffect(effect) {
       switch (effect.name) {
         case 'speedRecovery':
@@ -146,7 +72,7 @@ export const useBoardEffects = ({ score, snake, setSnakeSpeed, foodCells, setFoo
           const newFoodCells = getRandomNumbersExcluded(
             GAME_CONFIG.boardStartCellId,
             GAME_CONFIG.boardEndCellId,
-            ADDITIONAL_CELLS_LIMIT,
+            EFFECT_CELLS_COUNT,
             [...snake.cells, ...foodCells]
           );
 
@@ -161,14 +87,14 @@ export const useBoardEffects = ({ score, snake, setSnakeSpeed, foodCells, setFoo
           const newWallCells = getRandomNumbersExcluded(
             GAME_CONFIG.boardStartCellId,
             GAME_CONFIG.boardEndCellId,
-            ADDITIONAL_CELLS_LIMIT,
+            EFFECT_CELLS_COUNT,
             [...snake.cells, ...foodCells, ...wallCells]
           );
           setWallCells([...wallCells, ...newWallCells]);
           return;
 
         case 'speedBoost':
-          setSnakeSpeed(snakeSpeed => snakeSpeed - SPEED_BOOST_VALUE);
+          setSnakeSpeed(snakeSpeed => snakeSpeed - INCREASE_SPEED_VALUE);
           return;
 
         case 'normalControl':
@@ -185,7 +111,6 @@ export const useBoardEffects = ({ score, snake, setSnakeSpeed, foodCells, setFoo
 
         default:
           return;
-      
       }
   }
 

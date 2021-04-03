@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
+
 import './GameOver.css';
+
 
 export const GameOver = ({ score, speed, onGameStart }) => {
   useEffect(() => {

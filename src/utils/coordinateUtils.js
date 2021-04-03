@@ -1,16 +1,4 @@
-const DIRECTION = {
-  UP: 'up',
-  RIGHT: 'right',
-  DOWN: 'down',
-  LEFT: 'left'
-};
-
-export const OPPOSITE_DIRECTION = {
-  [DIRECTION.UP]: DIRECTION.DOWN,
-  [DIRECTION.RIGHT]: DIRECTION.LEFT,
-  [DIRECTION.DOWN]: DIRECTION.UP,
-  [DIRECTION.LEFT]: DIRECTION.RIGHT
-}
+import { DIRECTION, OPPOSITE_DIRECTION } from '../constants/directionsConstants';
 
 export function getKeyDirection(eventCode) {
   switch (eventCode) {
@@ -28,8 +16,12 @@ export function getKeyDirection(eventCode) {
   }
 }
 
+export function getOppositeDirection(direction) {
+  return OPPOSITE_DIRECTION[direction];
+}
+
 export function isOppositeDirection(direction, nextDirection) {
-  return OPPOSITE_DIRECTION[direction] === nextDirection;
+  return getOppositeDirection(direction) === nextDirection;
 }
 
 export function getCoordinatesByDirection(coordinates, direction) {
@@ -78,7 +70,7 @@ export function getCoordinatesByValue(board, value) {
   for (let i = 0; i < board.length; i++) {
     for (let j = 0; j < board.length; j++) {
       if (board[i][j] === value) {
-        return { row: i, col: j, cell: value }
+        return { row: i, col: j, cell: value };
       }
     }
   }

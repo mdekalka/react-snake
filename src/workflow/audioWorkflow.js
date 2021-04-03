@@ -1,23 +1,16 @@
-import foodSound from '../sounds/food.wav';
-import dieSound from '../sounds/game-over.mp3';
-import themeSound from '../sounds/main-theme.mp3';
+import { SOUNDS_HASH } from '../constants/soundConstants'; 
 
-const SOUND_MAPPER = {
-  Food: { name: 'Food', path: foodSound, repeat: false },
-  GameOver: { name: 'GameOver', path: dieSound, repeat: false },
-  MainTheme: { name: 'MainTheme', path: themeSound, repeat: true }
-};
 
 class AudioWorkflow {
-  constructor(soundsList) {
+  constructor(sounds) {
+    this.DEFAULT_AUDIO_LEVEL = 0.15;
     this.loading = null;
     this.listenCallback = () => {};
 
-    this.sounds = {};
-    this.soundsList = soundsList;
+    this.sounds = sounds;
     this.audioContext = null;
     this.audioBuffers = {};
-    this.currentPlayingSound = null;
+    this.currentPlayingAudio = null;
 
     this.init();
   }
@@ -38,7 +31,7 @@ class AudioWorkflow {
     this.loading = true;
     this.listenCallback(this.loading);
 
-    Promise.all(Object.values(this.soundsList).map(sound => this.fetchSound(sound)))
+    Promise.all(Object.values(this.sounds).map(sound => this.fetchSound(sound)))
       .finally(_ => {
         this.loading = false;
         this.listenCallback(this.loading);
@@ -63,31 +56,33 @@ class AudioWorkflow {
       const audioSound = await this.audioContext.decodeAudioData(soundBuffer);
 
       this.audioBuffers[sound.name] = audioSound;
-      this.sounds[sound.name] = sound.name;
     } catch(e) {
-      console.error('Fetching audio files failed with: ', e.message);
+      console.error('Fetching or decoding audio files failed with: ', e.message);
     }
   }
 
-  play(soundName) {
-    const sound = this.audioBuffers[soundName];
-    const soundOptions = this.soundsList[soundName];
+  play(sound) {
+    if (!sound) return;
 
-    if (sound) {
+    const { name } = sound; 
+    const audioBuffer = this.audioBuffers[name];
+    const soundOptions = this.sounds[name];
+
+    if (audioBuffer) {
       const playSound = this.audioContext.createBufferSource();
       const gainNode = this.audioContext.createGain();
 
-      gainNode.gain.value = 0.15; // default sound level
+      gainNode.gain.value = this.DEFAULT_AUDIO_LEVEL;
       gainNode.connect(this.audioContext.destination);
 
-      playSound.buffer = sound;
+      playSound.buffer = audioBuffer;
       playSound.loop = soundOptions.repeat;
       playSound.connect(gainNode);
 
       if (playSound.loop) {
         this.stop();
 
-        this.currentPlayingSound = playSound;
+        this.currentPlayingAudio = playSound;
       }
 
       playSound.start(0);
@@ -95,16 +90,16 @@ class AudioWorkflow {
   }
 
   pause() {
-    if (this.currentPlayingSound) {
-      this.currentPlayingSound.pause();
+    if (this.currentPlayingAudio) {
+      this.currentPlayingAudio.pause();
     }
   }
 
   stop() {
-    if (this.currentPlayingSound) {
-      this.currentPlayingSound.stop();
+    if (this.currentPlayingAudio) {
+      this.currentPlayingAudio.stop();
     }
   }
 }
 
-export const audioWorkflow = new AudioWorkflow(SOUND_MAPPER);
+export const audioWorkflow = new AudioWorkflow(SOUNDS_HASH);

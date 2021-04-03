@@ -1,0 +1,13 @@
+export const DIRECTION = {
+  UP: 'up',
+  RIGHT: 'right',
+  DOWN: 'down',
+  LEFT: 'left'
+};
+
+export const OPPOSITE_DIRECTION = {
+  [DIRECTION.UP]: DIRECTION.DOWN,
+  [DIRECTION.RIGHT]: DIRECTION.LEFT,
+  [DIRECTION.DOWN]: DIRECTION.UP,
+  [DIRECTION.LEFT]: DIRECTION.RIGHT
+}

@@ -1,4 +1,4 @@
-export function difference(searchArray, toRemoveArray) {
+export function difference(searchArray = [], toRemoveArray = []) {
   return searchArray.filter(item => { return !toRemoveArray.includes(item)});
 }
 

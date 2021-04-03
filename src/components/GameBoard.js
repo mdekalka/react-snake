@@ -2,6 +2,7 @@ import React from 'react';
 
 import './GameBoard.css';
 
+
 function getCellClassName({ cell, foodCells, wallCells, snake, direction }) {
   let className = 'cell';
 

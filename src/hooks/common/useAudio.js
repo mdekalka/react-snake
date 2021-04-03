@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { audioWorkflow } from '../workflow/audioWorkflow';
+
+import { audioWorkflow } from '../../workflow/audioWorkflow';
+
 
 export const useAudio = (enabled) => {
-  const [ loadingAudio,  setLoadingAudio ] = useState(null);
+  const [ loadingAudio, setLoadingAudio ] = useState(null);
   const [ enabledAudio, setEnabledAudio ] = useState(false);
 
   useEffect(() => {

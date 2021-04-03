@@ -25,6 +25,6 @@ export function getBoolean(factor = 0.1) { // default ~10% probability of gettin
   return Math.random() < factor;
 }
 
-export function getRandomNumber(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+export function getSampleFromArray(array = []) {
+  return array[Math.floor(Math.random() * array.length)];
 }

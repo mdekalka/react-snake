@@ -1,12 +1,12 @@
 export function createBoard(rowSize, colSize) {
-  let cell_id = 1;
+  let cellId = 1;
   const board = [];
 
   for (let i = 0; i < rowSize; i++) {
     const currentRow = [];
     
     for (let j = 0; j < colSize; j++) {
-      currentRow.push(cell_id++);
+      currentRow.push(cellId++);
     }
 
     board.push(currentRow);
@@ -28,17 +28,23 @@ export function isBodyCollision(cells, nextCell) {
   return cells.includes(nextCell);
 }
 
-export function getInitialSnakePosition(board, config) {
+export function getCellPosition(board, row, col) {
+  return board[row][col];
+}
+
+function getFactorCellPosition(board, factor) {
   const rowSize = board.length;
   const colSize = board[0].length;
 
-  const row = Math.round(rowSize / (board.length / config.snakeHeadPositionFactor));
-  const col = Math.round(colSize / (board.length / config.snakeHeadPositionFactor));
-  const cell = board[row][col];
+  const row = Math.round(rowSize / (board.length / factor));
+  const col = Math.round(colSize / (board.length / factor));
+  const cell = getCellPosition(board, row, col);
 
   return { row, col, cell };
 }
 
-export function getCellPosition(board, row, col) {
-  return board[row][col];
+export function createSnake(board, snakeHeadFactor) {
+  const snakePosition = getFactorCellPosition(board, snakeHeadFactor);
+
+  return { head: snakePosition, tail: snakePosition, cells: [snakePosition.cell] }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import {} from '../hooks/useInterval';
 
 import './EffectNotification.css';
+
 
 export const EffectNotification = ({ effect, delay }) => {
   const [ visible, setVisible ] = useState(true);
