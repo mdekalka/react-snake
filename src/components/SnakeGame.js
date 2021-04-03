@@ -1,41 +1,44 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
+import { Spinner } from '../components/common/Spinner'; 
 import { GameBoard } from '../components/GameBoard';
 import { GameOver } from '../components/GameOver';
+import { GameStatistics } from '../components/GameStatistics'; 
 import { EffectNotification } from '../components/EffectNotification'
-
-import { BOARD_EFFECTS } from '../constants/boardEffectsConstants'; 
+ 
 import { GAME_CONFIG } from '../configs'
 
-import { useInterval, useAudio, useBoardEffects, getScoreUntilNextEffect, useLocalStorage } from '../hooks';
+import { useInterval, useAudio, useBoardEffects, useLocalStorage } from '../hooks';
 import { createBoard, createSnake, isOutOfBoundaries, getCellPosition, isBodyCollision } from '../utils/boardUtils';
 import { getKeyDirection, isOppositeDirection, getCoordinatesByDirection, getCoordinatesByValue, getBoundaryCoordinatesByDirection, getOppositeDirection } from '../utils/coordinateUtils';
-import { getRandomNumberExcluded } from '../utils/booleanUtils'
+import { getRandomNumberExcluded } from '../utils/common/booleanUtils'
 
 import './SnakeGame.css';
 
 
 const board = createBoard(GAME_CONFIG.boardRowSize, GAME_CONFIG.boardColSize);
 const initialSnake = createSnake(board, GAME_CONFIG.snakeHeadPositionFactor);
+const initialFoodCell = getRandomNumberExcluded(initialSnake.head.cell, GAME_CONFIG.boardEndCellId, [initialSnake.head.cell]);
 const STORAGE_STATS_KEY = 'highest-stats';
 
 
 export const SnakeGame = () => {
-  const [ snakeSpeed, setSnakeSpeed ] = useState(GAME_CONFIG.snakeSpeed);
   const [ snake, setSnake ] = useState(initialSnake);
-  const initialFoodCell = getRandomNumberExcluded(snake.head.cell, GAME_CONFIG.boardEndCellId, [snake.head.cell])
+  const [ snakeSpeed, setSnakeSpeed ] = useState(GAME_CONFIG.snakeSpeed);
   const [ foodCells, setFoodCells ] = useState([initialFoodCell]);
-  const [ wallCells, setWallCells ] = useState([]);
   const [ direction, setDirection ] = useState(null);
-  const fututeDirection = useRef(direction)
+  const fututeDirection = useRef(direction);
+
   const [ highestStats, saveHighestStats ] = useLocalStorage(STORAGE_STATS_KEY, { highestScore: 0, highestSpeed: GAME_CONFIG.snakeSpeed });
   const [ score, setScore ] = useState(0);
   const [ isGameOver, setIsGameOver ] = useState(false);
-  const [ invisibleWalls, setInsivibleWalls ] = useState(GAME_CONFIG.invisibleWalls);
-  const [ reverseControl, setReverseControl ] = useState(GAME_CONFIG.reverseControl);
+
   const [ enabledSound, setEnabledSound ] = useState(false);
   const { loading, play, sounds } = useAudio(enabledSound);
 
+  const [ wallCells, setWallCells ] = useState(GAME_CONFIG.deathWalls);
+  const [ invisibleWalls, setInsivibleWalls ] = useState(GAME_CONFIG.invisibleWalls);
+  const [ reverseControl, setReverseControl ] = useState(GAME_CONFIG.reverseControl);
   const effect = useBoardEffects({
     score,
     snake,
@@ -52,15 +55,10 @@ export const SnakeGame = () => {
   const updateHighestState = useCallback(() => {
     const isNewHighestScore = score > highestStats.highestScore;
     const isNewHighestSpeed = snakeSpeed < highestStats.highestSpeed;
-    let updatedStats = {};
-      
-    if (isNewHighestScore) {
-      updatedStats.highestScore = score;
-    }
-
-    if (isNewHighestSpeed) {
-      updatedStats.highestSpeed = snakeSpeed;
-    }
+    let updatedStats = {
+      ...(isNewHighestScore && { highestScore: score }),
+      ...(isNewHighestSpeed && { highestSpeed: snakeSpeed }),
+    };
 
     saveHighestStats(stats => ({ ...stats, ...updatedStats }));
   }, [score, snakeSpeed, highestStats, saveHighestStats]);
@@ -77,7 +75,7 @@ export const SnakeGame = () => {
     setIsGameOver(false);
     setSnake(initialSnake);
     setFoodCells([initialFoodCell]);
-    setWallCells([]);
+    setWallCells(GAME_CONFIG.deathWalls);
     setDirection(null);
     setScore(0);
     setSnakeSpeed(GAME_CONFIG.snakeSpeed);
@@ -100,11 +98,11 @@ export const SnakeGame = () => {
       let direction = getKeyDirection(event.code);
       const isValidDirection = direction !== '';
 
-      if (reverseControl) {
-        direction = getOppositeDirection[direction];
-      }
-
       if (isValidDirection) {
+        if (reverseControl) {
+          direction = getOppositeDirection(direction);
+        }
+
         // Since keydown logic happens outside on tick interval, we can't update direction state here.
         // Instead we're saving only ref with future direction and save it inside interval tick update
         fututeDirection.current = direction;
@@ -125,7 +123,7 @@ export const SnakeGame = () => {
     // Out of board size - end the game
     if (isOutOfBoundaries(nextHeadPosition, board)) {
       if (invisibleWalls) {
-        nextHeadPosition = getBoundaryCoordinatesByDirection(nextHeadPosition, board, newDirection)
+        nextHeadPosition = getBoundaryCoordinatesByDirection(nextHeadPosition, board, newDirection);
       } else {
         return setIsGameOver(true);
       }
@@ -149,8 +147,9 @@ export const SnakeGame = () => {
       updatedSnakeCells = [...snake.cells, nextHeadCellPosition];
 
       generateFoodCells(updatedSnakeCells);
-      increaseSnakeSpeed();
-      increaseScore();
+      setSnakeSpeed(speed => speed - GAME_CONFIG.speedGap);
+      setScore(score => score + 1);
+
       play(sounds.Food);
     } else {  // no food consumption, just regular moving
       updatedSnakeCells = [...snake.cells];
@@ -166,18 +165,10 @@ export const SnakeGame = () => {
   }, !isGameOver ? snakeSpeed : null); // stop interval on game over
 
   function generateFoodCells(snakeCells) {
-    const foodPosition = getRandomNumberExcluded(GAME_CONFIG.boardStartCellId, GAME_CONFIG.boardEndCellId, snakeCells);
+    const foodCell = getRandomNumberExcluded(GAME_CONFIG.boardStartCellId, GAME_CONFIG.boardEndCellId, snakeCells);
     const newFoodCells = foodCells.filter(cell => !snakeCells.includes(cell));
 
-    setFoodCells([...newFoodCells, foodPosition]);
-  }
-
-  function increaseSnakeSpeed() {
-    setSnakeSpeed(speed => speed - GAME_CONFIG.speedGap);
-  }
-
-  function increaseScore() {
-    setScore(score => score + 1);
+    setFoodCells([...newFoodCells, foodCell]);
   }
 
   function onToggleAudio() {
@@ -187,7 +178,7 @@ export const SnakeGame = () => {
   return (
     <div className="game-wrapper">
       {loading
-        ? <div className="loading-spinner"></div>
+        ? <Spinner position={{ top: 25, right: 25 }} />
         : <div className={`sound-control ${enabledSound ? 'on' : ''}`} title="audio toggle" onClick={onToggleAudio}>♬</div>
       }
       <EffectNotification effect={effect} delay={5000} />
@@ -202,34 +193,7 @@ export const SnakeGame = () => {
         />
         {isGameOver && <GameOver score={score} speed={snakeSpeed} onGameStart={onGameStart} />}
       </div>
-      <div className="information-wrapper">
-        <div className="information-board stats-board">
-          <h4 className="information-header">Statistics:</h4>
-          <p className="information-text">Curent score: {score}</p>
-          <p className="information-text">Current speed: {snakeSpeed}</p>
-          <hr/>
-          <p className="information-text">Hightest score: {highestStats.highestScore}</p>
-          <p className="information-text">Hightest speed: {highestStats.highestSpeed}</p>
-          <hr/>
-          <p>You need to get <span className="information-note">{getScoreUntilNextEffect(score)}</span> points to generate next effect.</p>
-        </div>
-        <div className="information-board controls-board">
-          <h4 className="information-header">Controls:</h4>
-          <p className="information-text"><span className="information-note">↑</span> - to move up</p>
-          <p className="information-text"><span className="information-note">→</span> - to move right</p>
-          <p className="information-text"><span className="information-note">↓</span> - to move down</p>
-          <p className="information-text"><span className="information-note">←</span> - to move left</p>
-          <hr/>
-        </div>
-        <div className="information-board effects-board">
-          <h4 className="information-header">Board effects:</h4>
-          {BOARD_EFFECTS.map(({ id, quality, icon, description}) => (
-            <p key={id} className="information-text">
-              <span className={`information-note ${quality}`}>{icon}</span>  - {description}
-            </p>
-          ))}
-        </div>
-      </div>
+      <GameStatistics score={score} snakeSpeed={snakeSpeed} stats={highestStats} />
     </div>
   )
 }

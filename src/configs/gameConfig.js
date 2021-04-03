@@ -6,6 +6,7 @@ export const GAME_CONFIG = {
   snakeSpeed: 150,
   speedGap: 2,
   snakeHeadPositionFactor: 2,
+  deathWalls: [],
   invisibleWalls: false,
   reverseControl: false
 };

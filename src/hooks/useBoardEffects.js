@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 
 import { GAME_CONFIG } from '../configs';
 import { BOARD_EFFECTS, GENERATE_EFFECT_SCORE_STEP, EFFECT_CELLS_COUNT, INCREASE_SPEED_VALUE } from '../constants/boardEffectsConstants';
-import { getRandomNumbersExcluded, getSampleFromArray } from '../utils/booleanUtils';
-import { difference, arrayToHash } from '../utils/arrayUtils';
+import { getRandomNumbersExcluded, getSampleFromArray } from '../utils/common/booleanUtils';
+import { difference, arrayToHash } from '../utils/common/arrayUtils';
 
 
 const effectsHash = arrayToHash(BOARD_EFFECTS, 'id');

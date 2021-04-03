@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 
+import { InformationTypography } from './common/InformationBoard';
+
 import './EffectNotification.css';
 
 
@@ -31,9 +33,11 @@ export const EffectNotification = ({ effect, delay }) => {
 
   return (visible && effect) ? (
     <div className="notification">
-      <p className="notification-text">
-        <span className={`notification-note ${effect.quality}`}>{effect.icon}</span>  - {effect.description}
-      </p>
+      <InformationTypography type="text">
+        <InformationTypography type="meta" sign={effect.quality}>
+          {effect.icon}
+        </InformationTypography>  - {effect.description}
+      </InformationTypography>
     </div>) : null
 }
 

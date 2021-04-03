@@ -1,0 +1,41 @@
+
+.information-board {
+  display: flex;
+  text-align: left;
+  color: #9a9999;
+}
+
+.information-board .information-section {
+  flex: 1 1 0px;
+  padding: 0 25px;
+  border-right: 1px solid #4f4b52;
+}
+
+.information-typography.header {
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+  color: #a564bb;
+}
+
+.information-typography.text {
+  font-size: 16px;
+  margin-top: 0;
+  margin-bottom: 4px;;
+}
+
+.information-typography.note {
+  vertical-align: middle;
+  font-size: 20px;
+}
+
+.information-typography.highlight {
+  color: #a564bb;
+}
+
+.information-typography.positive {
+  color: #4ea8ac;
+}
+
+.information-typography.negative {
+  color: #dc5aa2;
+}

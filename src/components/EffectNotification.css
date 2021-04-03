@@ -22,14 +22,6 @@
   font-size: 20px;
 }
 
-.notification .notification-note.positive {
-  color: #4ea8ac;
-}
-
-.notification .notification-note.negative {
-  color: #dc5aa2;
-}
-
 @keyframes fadeIn {
   0% { 
     transform: translateY(-25px);
