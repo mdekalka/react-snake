@@ -1,4 +1,4 @@
-export const GENERATE_EFFECT_SCORE_STEP = 5;
+export const GENERATE_EFFECT_SCORE_STEP = 4;
 // Numbers of cells that would be generated on board effect
 export const EFFECT_CELLS_COUNT = 5;
 // Boost snake speed value

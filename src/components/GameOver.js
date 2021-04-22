@@ -8,9 +8,9 @@ export const GameOver = ({ score, speed, onGameStart }) => {
     window.addEventListener('keydown', handleKeyDown);
 
     function handleKeyDown(event) {
-      const isSpace = event.code === 'Enter';
+      const isEnter = event.code === 'Enter';
 
-      isSpace && onGameStart();
+      isEnter && onGameStart();
     }
 
     return function() {
