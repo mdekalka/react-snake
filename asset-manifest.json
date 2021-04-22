@@ -1,0 +1,27 @@
+{
+  "files": {
+    "main.css": "/react-snake/static/css/main.9f4b85f9.chunk.css",
+    "main.js": "/react-snake/static/js/main.3a1fb836.chunk.js",
+    "main.js.map": "/react-snake/static/js/main.3a1fb836.chunk.js.map",
+    "runtime-main.js": "/react-snake/static/js/runtime-main.2c57989c.js",
+    "runtime-main.js.map": "/react-snake/static/js/runtime-main.2c57989c.js.map",
+    "static/js/2.521953d6.chunk.js": "/react-snake/static/js/2.521953d6.chunk.js",
+    "static/js/2.521953d6.chunk.js.map": "/react-snake/static/js/2.521953d6.chunk.js.map",
+    "static/js/3.70759bd7.chunk.js": "/react-snake/static/js/3.70759bd7.chunk.js",
+    "static/js/3.70759bd7.chunk.js.map": "/react-snake/static/js/3.70759bd7.chunk.js.map",
+    "index.html": "/react-snake/index.html",
+    "static/css/main.9f4b85f9.chunk.css.map": "/react-snake/static/css/main.9f4b85f9.chunk.css.map",
+    "static/js/2.521953d6.chunk.js.LICENSE.txt": "/react-snake/static/js/2.521953d6.chunk.js.LICENSE.txt",
+    "static/media/GameBoard.css": "/react-snake/static/media/arrow.87507af5.svg",
+    "static/media/App.css": "/react-snake/static/media/bg.8d62a964.png",
+    "static/media/food.6b885d08.wav": "/react-snake/static/media/food.6b885d08.wav",
+    "static/media/game-over.9c7e6571.mp3": "/react-snake/static/media/game-over.9c7e6571.mp3",
+    "static/media/main-theme.995bbada.mp3": "/react-snake/static/media/main-theme.995bbada.mp3"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.2c57989c.js",
+    "static/js/2.521953d6.chunk.js",
+    "static/css/main.9f4b85f9.chunk.css",
+    "static/js/main.3a1fb836.chunk.js"
+  ]
+}
